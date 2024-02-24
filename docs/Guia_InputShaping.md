@@ -76,15 +76,16 @@ El resto de líneas punteadas muestran las reducciones en vibración del resto d
 En el cuadro superior derecho, se muestran los detalles de cada input shaper:  
 Frecuencia a la que se recomienda configurarlo.  
 Control de vibración en % (menos es mejor).  
-Smoothing: Ël exceso de corrección puede provocar que se suavicen demasiado cambios de sentido perdiendo detalle en las impresiones. Más bajo mejor.  
-Accel: Aceleración máxima a la que puede usarse este input shaper y que siga siendo efectivo.  
+Smoothing: Para evitar las vibraciones, el shaper altera los movimientos originales pudiendo llegar a provocar pérdida de detalle en las impresiones. Cuanto más bajo, mejor.  
+Accel: Aceleración máxima a la que puede usarse este input shaper sin que genere smoothing adicional.  
 
 ### Como escojer el input shaper más adecuado:  
 
 En general, dentro de los que cubren la velocidad deseada, queremos el que tenga un valor de control de vibración y smoothing más bajos.  
 
-Cuando la vibración se concentra en un solo pico, normalmente se aplican ZV (Zero Vibration) o MZV (Magnitude Zero Vibration).  
-Cuando la vibración se divide en varios picos, normalmente se aplica el shaper Ei que es más resistente a escenarios de vibraciones variables. También puede ser preferible en las slingers al ir variando el punto de resonancia cuando se imprimen objetos voluminosos que la cama debe mover.  
+El cuadro superior derecho lista los distintos shapers de menos a más agresivo (mas smoothing).
+Cuando la vibración se concentra en un solo pico, normalmente se aplican ZV (Zero Vibration) o MZV (Modified Zero Vibration).  
+Cuando la vibración se divide en varios picos, normalmente se aplica el shaper EI (Extra-Insensitive) que es más resistente a escenarios de vibraciones variables. También puede ser preferible en las slingers al ir variando el punto de resonancia cuando se imprimen objetos voluminosos que la cama debe mover.  
 
 Interpretando las líneas, se busca que en los picos de vibración del eje medido tengan un reflejo negativo en el shaper:  
 Que tenga los valores más bajos posibles en los picos de vibración del eje y que recupere bien fuera de estos para evitar smoothing.  
