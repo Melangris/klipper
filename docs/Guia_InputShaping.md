@@ -6,6 +6,8 @@
 <https://www.youtube.com/watch?v=aHQju3e2guE>
 A partir de [aquí](https://youtu.be/aHQju3e2guE?t=1113) para la prueba en sí.  
 <https://www.klipper3d.org/Resonance_Compensation.html>  
+Para una explicación más técnica:
+<https://klipper.discourse.group/t/interpreting-the-input-shaper-graphs/9879>
 
 ## Compilado klipper para rpi pico:
 
