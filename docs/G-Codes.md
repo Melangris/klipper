@@ -139,6 +139,17 @@ Writes raw "value" into register "register". Both "value" and
 and refer to sensor data sheet for the reference. This is only
 available for tle5012b chips.
 
+### [axis_twist_compensation]
+
+The following commands are available when the
+[axis_twist_compensation config
+section](Config_Reference.md#axis_twist_compensation) is enabled.
+
+#### AXIS_TWIST_COMPENSATION_CALIBRATE
+`AXIS_TWIST_COMPENSATION_CALIBRATE [SAMPLE_COUNT=<value>]`: Initiates the X
+twist calibration wizard. `SAMPLE_COUNT` specifies the number of points along
+the X axis to calibrate at and defaults to 3.
+
 ### [bed_mesh]
 
 The following commands are available when the
@@ -464,6 +475,20 @@ enabled.
 #### SET_FAN_SPEED
 `SET_FAN_SPEED FAN=config_name SPEED=<speed>` This command sets the
 speed of a fan. "speed" must be between 0.0 and 1.0.
+
+`SET_FAN_SPEED PIN=config_name TEMPLATE=<template_name>
+[<param_x>=<literal>]`: If `TEMPLATE` is specified then it assigns a
+[display_template](Config_Reference.md#display_template) to the given
+fan. For example, if one defined a `[display_template
+my_fan_template]` config section then one could assign
+`TEMPLATE=my_fan_template` here. The display_template should produce a
+string containing a floating point number with the desired value. The
+template will be continuously evaluated and the fan will be
+automatically set to the resulting speed. One may set display_template
+parameters to use during template evaluation (parameters will be
+parsed as Python literals). If TEMPLATE is an empty string then this
+command will clear any previous template assigned to the pin (one can
+then use `SET_FAN_SPEED` commands to manage the values directly).
 
 ### [filament_switch_sensor]
 
@@ -846,6 +871,20 @@ output `VALUE`. VALUE should be 0 or 1 for "digital" output pins. For
 PWM pins, set to a value between 0.0 and 1.0, or between 0.0 and
 `scale` if a scale is configured in the output_pin config section.
 
+`SET_PIN PIN=config_name TEMPLATE=<template_name> [<param_x>=<literal>]`:
+If `TEMPLATE` is specified then it assigns a
+[display_template](Config_Reference.md#display_template) to the given
+pin. For example, if one defined a `[display_template
+my_pin_template]` config section then one could assign
+`TEMPLATE=my_pin_template` here. The display_template should produce a
+string containing a floating point number with the desired value. The
+template will be continuously evaluated and the pin will be
+automatically set to the resulting value. One may set display_template
+parameters to use during template evaluation (parameters will be
+parsed as Python literals). If TEMPLATE is an empty string then this
+command will clear any previous template assigned to the pin (one can
+then use `SET_PIN` commands to manage the values directly).
+
 ### [palette2]
 
 The following commands are available when the
@@ -972,6 +1011,28 @@ direction as well as Z.
 babystepping), and subtract if from the probe's z_offset.  This acts
 to take a frequently used babystepping value, and "make it permanent".
 Requires a `SAVE_CONFIG` to take effect.
+
+### [probe_eddy_current]
+
+The following commands are available when a
+[probe_eddy_current config section](Config_Reference.md#probe_eddy_current)
+is enabled.
+
+#### PROBE_EDDY_CURRENT_CALIBRATE
+`PROBE_EDDY_CURRENT_CALIBRATE CHIP=<config_name>`: This starts a tool
+that calibrates the sensor resonance frequencies to corresponding Z
+heights. The tool will take a couple of minutes to complete. After
+completion, use the SAVE_CONFIG command to store the results in the
+printer.cfg file.
+
+#### LDC_CALIBRATE_DRIVE_CURRENT
+`LDC_CALIBRATE_DRIVE_CURRENT CHIP=<config_name>` This tool will
+calibrate the ldc1612 DRIVE_CURRENT0 register. Prior to using this
+tool, move the sensor so that it is near the center of the bed and
+about 20mm above the bed surface. Run this command to determine an
+appropriate DRIVE_CURRENT for the sensor. After running this command
+use the SAVE_CONFIG command to store that new setting in the
+printer.cfg config file.
 
 ### [pwm_cycle_time]
 
@@ -1291,7 +1352,7 @@ The toolhead module is automatically loaded.
 
 #### SET_VELOCITY_LIMIT
 `SET_VELOCITY_LIMIT [VELOCITY=<value>] [ACCEL=<value>]
-[ACCEL_TO_DECEL=<value>] [SQUARE_CORNER_VELOCITY=<value>]`: This
+[MINIMUM_CRUISE_RATIO=<value>] [SQUARE_CORNER_VELOCITY=<value>]`: This
 command can alter the velocity limits that were specified in the
 printer config file. See the
 [printer config section](Config_Reference.md#printer) for a
@@ -1353,17 +1414,6 @@ print.
 #### SDCARD_RESET_FILE
 `SDCARD_RESET_FILE`: Unload file and clear SD state.
 
-### [axis_twist_compensation]
-
-The following commands are available when the
-[axis_twist_compensation config
-section](Config_Reference.md#axis_twist_compensation) is enabled.
-
-#### AXIS_TWIST_COMPENSATION_CALIBRATE
-`AXIS_TWIST_COMPENSATION_CALIBRATE [SAMPLE_COUNT=<value>]`: Initiates the X
-twist calibration wizard. `SAMPLE_COUNT` specifies the number of points along
-the X axis to calibrate at and defaults to 3.
-
 ### [z_thermal_adjust]
 
 The following commands are available when the
@@ -1393,3 +1443,39 @@ command will probe the points specified in the config and then make independent
 adjustments to each Z stepper to compensate for tilt. See the PROBE command for
 details on the optional probe parameters. The optional `HORIZONTAL_MOVE_Z`
 value overrides the `horizontal_move_z` option specified in the config file.
+
+### [temperature_probe]
+
+The following commands are available when a
+[temperature_probe config section](Config_Reference.md#temperature_probe)
+is enabled.
+
+#### TEMPERATURE_PROBE_CALIBRATE
+`TEMPERATURE_PROBE_CALIBRATE [PROBE=<probe name>] [TARGET=<value>] [STEP=<value>]`:
+Initiates probe drift calibration for eddy current based probes.  The `TARGET`
+is a target temperature for the last sample.  When the temperature recorded
+during a sample exceeds the `TARGET` calibration will complete.  The `STEP`
+parameter sets temperature delta (in C) between samples. After a sample has
+been taken, this delta is used to schedule a call to `TEMPERATURE_PROBE_NEXT`.
+The default `STEP` is 2.
+
+#### TEMPERATURE_PROBE_NEXT
+`TEMPERATURE_PROBE_NEXT`: After calibration has started this command is run to
+take the next sample.  It is automatically scheduled to run when the delta
+specified by `STEP` has been reached, however its also possible to manually run
+this command to force a new sample.  This command is only available during
+calibration.
+
+#### TEMPERATURE_PROBE_COMPLETE:
+`TEMPERATURE_PROBE_COMPLETE`:  Can be used to end calibration and save the
+current result before the `TARGET` temperature is reached.  This command
+is only available during calibration.
+
+#### ABORT
+`ABORT`:  Aborts the calibration process, discarding the current results.
+This command is only available during drift calibration.
+
+### TEMPERATURE_PROBE_ENABLE
+`TEMPERATURE_PROBE_ENABLE ENABLE=[0|1]`: Sets temperature drift
+compensation on or off. If ENABLE is set to 0, drift compensation
+will be disabled, if set to 1 it is enabled.
