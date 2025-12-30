@@ -35,11 +35,13 @@ class DigitalFilter:
         except:
             raise cfg_error("DigitalFilter require the SciPy module")
         if highpass:
-            self.filter_sections.append(
+            self.filter_sections.extend(
                 self._butter(highpass, "highpass", highpass_order))
         if lowpass:
-            self.filter_sections.append(
+            self.filter_sections.extend(
                 self._butter(lowpass, "lowpass", lowpass_order))
+        if notches is None:
+            notches = []
         for notch_freq in notches:
             self.filter_sections.append(self._notch(notch_freq, notch_quality))
         if len(self.filter_sections) > 0:
@@ -48,7 +50,7 @@ class DigitalFilter:
     def _butter(self, frequency, btype, order):
         import scipy.signal as signal
         return signal.butter(order, Wn=frequency, btype=btype,
-            fs=self.sample_frequency, output='sos')[0]
+            fs=self.sample_frequency, output='sos')
 
     def _notch(self, freq, quality):
         import scipy.signal as signal
@@ -116,7 +118,7 @@ class FixedPointSosFilter:
                 if col != 3:  # omit column 3
                     fixed_coeff = to_fixed_32(coeff, self._coeff_int_bits)
                     fixed_section.append(fixed_coeff)
-                elif coeff != 1.0:  # double check colum 3 is always 1.0
+                elif coeff != 1.0:  # double check column 3 is always 1.0
                     raise ValueError("Coefficient 3 is expected to be 1.0"
                                      " but was %f" % (coeff,))
             sos_fixed.append(fixed_section)
